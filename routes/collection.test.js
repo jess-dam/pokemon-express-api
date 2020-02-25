@@ -2,6 +2,10 @@ const supertest = require('supertest');
 const app = require('../app');
 var myCollection = require('../db/database')
 
+describe('can insert values into a mongodb', () => {
+
+})
+
 
 describe('GET Requests', () => {
     let res;
