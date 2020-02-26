@@ -65,7 +65,6 @@ const db = require('../db/index')
 
 //     describe('can change the name of a pokemon', () => {
 //         beforeAll( async done => {
-//                 console.log(myCollection)
 //                 const idToRename = 0
 //                 myCollection = [];
 //                 myCollection.push(newPokemon)
@@ -97,7 +96,6 @@ const db = require('../db/index')
 
 
 //     it('can return reponse of 404 when pokemon does not exist', async () => {
-//         console.log(myCollection)
 //         const invalidRes = await supertest(app).patch(`/collection/pokemon/rename?id=${unavailableId}&name=${newName}`)
 //         expect(invalidRes.status).toBe(404);
 //         expect(invalidRes.body).toMatchObject({

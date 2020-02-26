@@ -51,6 +51,20 @@ const addPokemon = async (req, res, next ) => {
     }
 }}
 
+const getPokemonCollection = async (req, res, next) => {
+    console.log('getting the collection')
+    const collectionResults = await Pokemon.find({})
+    console.log(collectionResults)
+    res.status(200).json({
+        status: 'success',
+        message: 'Here are the pokemons in the collection',
+        collection: collectionResults
+    })
+}
+
+
+
 module.exports = {
-    addPokemon
+    addPokemon,
+    getPokemonCollection
 }

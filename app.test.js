@@ -89,12 +89,13 @@ describe('POST /collection',  () => {
     })
  })
 
- describe('GET /collection', () => {
+ describe.only('GET /collection', () => {
      describe('/', () => {
          let res, collectionDb
-         beforeAll( async done => {
+         beforeAll( async (done) => {
             res = await supertest(app).get('/')
             collectionDb = await Pokemon.find({})
+            done()
           })
          describe('when database is empty', () => {
 
@@ -102,20 +103,18 @@ describe('POST /collection',  () => {
 
          describe('when database has values', () => {
              beforeAll( async done => {
-                await supertest(app).post('/collection').send({
-                    name: 'Bulbasaur',
-                    hp: '100'
-                })
+                await supertest(app).get('/')
                 done()
+                })
              })
 
-             test('response has success status 201', () => {
+             test('response has success status 200', () => {
                 expect(res.status).toBe(200)
              })
 
              test('response returns object of pokemons in database', () => {
-                console.log(res.body.collection)
-                expect(res.collection).toContain({
+                // console.log(res)
+                expect(res.body.collection).toContain({
                     name: 'Bulbasaur',
                     hp: 100,
                     weakness: 0,
@@ -165,5 +164,18 @@ describe('POST /collection',  () => {
     //         })
     //     })
     //  })
- })
+
+
+
+
+//  const givenPokemonIsInDb = async () => {
+//     await supertest(app).post('/collection').send({
+//             name: 'Bulbasaur',
+//             hp: '100'
+//     })
+// }
+
+//  const givenPokemonCollectionIsEmpty = () => {
+
+//  }
 

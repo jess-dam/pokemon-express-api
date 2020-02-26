@@ -5,6 +5,8 @@ var router = express.Router();
 
 router.post('/', CollectionControl.addPokemon);
 
+router.get('/', (req, res, next) => { console.log('still here'); next() }, CollectionControl.getPokemonCollection);
+
 // router.post('/add-pokemon', (req, res, next) => {
 //     if (!req.body) {
 //         res.status(400).json({
