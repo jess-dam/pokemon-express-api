@@ -1,11 +1,15 @@
 const mongoose = require('mongoose')
+const elementTypes = require('./pokemonElementTypes');
 
-const pokemonSchema = new mongoose.Schema(
+const PokemonSchema = new mongoose.Schema(
     {
-        name: {type: String, required: true},
-        hp: {type: Number},
-        weakness: Number,
-        resistance: Number,
-        elementType: { type: ['FIRE', 'WATER', 'ELECTRIC', 'ROCK', 'GHOST']}
+        name: {type: String, default:'????' ,required: true},
+        hp: {type: Number, default: 0},
+        weakness: {type: Number, default: 0},
+        resistance: {type: Number, default: 0},
+        abilities: {type: [String], default: []},
+        elementType: { type: String, enum: elementTypes, default: '????' }
     }
 )
+
+module.exports = mongoose.model('Pokemon', PokemonSchema)
