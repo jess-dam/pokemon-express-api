@@ -1,5 +1,5 @@
 const express = require('express');
-const Pokemon = require('../../models/pokemon/Pokemon.model')
+const Pokemon = require('../../models/pokemons/Pokemon.model')
 const db = require('../../db/index')
 
 
@@ -83,8 +83,39 @@ const getPokemonById = async (req, res, next) => {
     }
 }
 
+const evolve = async (req, res, next) => {
+    // console.log(req.)
+    if(!req.params.id){
+        res.status(400).json({
+            status: 'failed',
+            message: 'You have not specified an id'
+        })
+    }
+
+    try{
+        console.log('going to evolve pokemon')
+        const evolvedPokemon = await Pokemon.findById(req.params.id)
+        evolvedPokemon.evolve()
+        console.log('evolved pokemon')
+        res.status(202).json({
+            status: 'success',
+            message: `Pokemon with id ${req.params.id} has been evolved`
+        })
+    } catch {
+        res.status(400).json({
+            status: 'failed',
+            message: `Could not evolve pokemon with an id of ${req.params.id}`
+        })
+    }
+}
+
+// const delete = async (req, res, next) => {
+
+// }
+
 module.exports = {
     addPokemon,
     getPokemonCollection,
-    getPokemonById
+    getPokemonById,
+    evolve
 }

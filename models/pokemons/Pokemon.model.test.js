@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const PokemonModel = require('./Pokemon.model')
 describe('PokemonModel', () => {
   beforeAll(async () => {
-    const url = `mongodb://127.0.0.1/deck`
+    const url = `mongodb://127.0.0.1/pokedex-test-models`
     await mongoose.connect(url, { useNewUrlParser: true })
   })
 
@@ -15,8 +15,8 @@ describe('PokemonModel', () => {
         name: 'First pokemon',
         description: 'This is your first pokemon'
       })
-      const allLessons = await PokemonModel.find({})
-      expect(allLessons).toHaveLength(1)
+      const allPokemon = await PokemonModel.find({})
+      expect(allPokemon).toHaveLength(1)
     })
   })
 

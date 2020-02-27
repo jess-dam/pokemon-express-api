@@ -12,4 +12,10 @@ const PokemonSchema = new mongoose.Schema(
     }
 )
 
+PokemonSchema.methods.evolve = function() {
+    this.hp += 10
+    this.weakness -= 1
+    this.resistance += 2
+}
+
 module.exports = mongoose.model('Pokemon', PokemonSchema)
