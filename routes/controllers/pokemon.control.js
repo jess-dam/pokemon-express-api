@@ -1,5 +1,5 @@
 const express = require('express');
-const Pokemon = require('../../models/pokemons/Pokemon.model')
+const Pokemon = require('../../models/pokemon/Pokemon.model')
 const db = require('../../db/index')
 
 

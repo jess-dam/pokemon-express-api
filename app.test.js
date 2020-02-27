@@ -1,6 +1,6 @@
 const supertest = require('supertest');
 const app = require('./app');
-const Pokemon = require('./models/pokemons/Pokemon.model')
+const Pokemon = require('./models/pokemon/Pokemon.model')
 const PokemonControl = require('./routes/controllers/pokemon.control')
 const mongoose = require('mongoose')
 
@@ -89,7 +89,7 @@ describe('POST /pokemon', () => {
     })
 })
 
-describe.only('GET /pokemon', () => {
+describe('GET /pokemon', () => {
 
     const expectedPokemon = {
         name: 'Bulbasaur',
@@ -198,9 +198,47 @@ describe.only('GET /pokemon', () => {
 })
 
 
-describe('PATCH /pokemon', () => {
+describe.only('PATCH /pokemon', () => {
     describe('/:id/evolve', () => {
-        test('given a valid id')
+        test('given a valid id', () => {
+            let res, idToEvolve
+            beforeAll(async () => {
+                idToEvolve = 'f3sgd35hf3h62'
+                res = await supertest(app).patch(`/${idToEvolve}/evolve`)
+            })
+
+            test('return a success message of 202', () => {
+                expect(res.status).toBe(202)
+            })
+
+            test('return appropriate message and id of changed pokemon', () => {
+                expect(res.body).toMatchObject({
+                    status: 'success',
+                    message: 'successfully evolved this pokemon',
+                    id: idToEvolve
+                })
+            })
+        })
+
+        test('given an invalid id', () => {
+            let res, idToEvolve
+            beforeAll(async () => {
+                idToEvolve = 'f3sgd35hf3h62'
+                res = await supertest(app).patch(`/${idToEvolve}/evolve`)
+            })
+
+            test('return a success message of 202', () => {
+                expect(res.status).toBe(202)
+            })
+
+            test('return appropriate message and id of changed pokemon', () => {
+                expect(res.body).toMatchObject({
+                    status: 'success',
+                    message: 'successfully evolved this pokemon',
+                    id: idToEvolve
+                })
+            })
+        })
     })
 })
 
