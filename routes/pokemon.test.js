@@ -1,29 +1,27 @@
 const supertest = require('supertest');
 const app = require('../app');
-var myCollection = require('../db/database')
 const db = require('../db/index')
 
 
 
-// describe('GET Requests', () => {
-//     let res;
+describe('GET Requests', () => {
+    let res;
 
-//     beforeAll(async done => {
-//         res = await supertest(app).get('/collection');
-//         done();
-//     })
+    beforeAll(async done => {
+        res = await supertest(app).get('/pokemon');
+        done();
+    })
 
-//     it('can send a response with a status code of 200', ()  => {
-//         expect(res.status).toBe(200)
-//     });
+    it('can send back a response with a status code of 200', ()  => {
+        expect(res.status).toBe(200)
+    });
 
-//     it('can send a response with pokemon collection', () => {
-//         expect(res.body).toMatchObject({
-//             status: 'success',
-//             collection: []
-//         })
-//     })
-// })
+    it('can send back a response with pokemon collection', () => {
+        expect(res.body).toMatchObject({
+            status: 'success'
+        })
+    })
+})
 
 
 // describe('POST Requests', () => {

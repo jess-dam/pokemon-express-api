@@ -1,11 +1,13 @@
-const express = require('express');
-const CollectionControl = require('./controllers/collection.control.js')
-var router = express.Router();
+const express = require('express')
+const PokemonControl = require('./controllers/pokemon.control.js')
+var router = express.Router()
 
+//POST
+router.post('/', PokemonControl.addPokemon)
 
-router.post('/', CollectionControl.addPokemon);
-
-router.get('/', (req, res, next) => { console.log('still here'); next() }, CollectionControl.getPokemonCollection);
+//GET
+router.get('/', PokemonControl.getPokemonCollection)
+router.get('/:id', PokemonControl.getPokemonById)
 
 // router.post('/add-pokemon', (req, res, next) => {
 //     if (!req.body) {
