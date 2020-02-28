@@ -3,10 +3,23 @@ const app = require('../app');
 const Pokemon = require('../models/pokemons/Pokemon.model')
 const mongoose = require('mongoose')
 
+const DEFAULT_POKEMON = {
+    name: 'Bulbasaur',
+    hp: 100,
+    resistance: 0,
+    weakness: 0,
+    abilities: [],
+    elementType: '????'
+}
 
-beforeAll(async () => {
+
+beforeAll(async (done) => {
     const url = 'mongodb://127.0.0.1/pokedex-test'
     await mongoose.connect(url, { useNewUrlParser: true })
+    // await givenDbIsEmpty()
+    // const databaseState = Pokemon.find({})
+    // expect(databaseState).toHaveLength(0)
+    done()
 })
 
 
@@ -86,26 +99,21 @@ describe('POST /pokemon', () => {
 })
 
 describe('GET /pokemon', () => {
-
-    const expectedPokemon = {
-        name: 'Bulbasaur',
-        hp: 100,
-        resistance: 0,
-        weakness: 0,
-        abilities: [],
-        elementType: '????'
-    }
+    beforeAll( async (done) => {
+        await givenDbIsEmpty()
+        done()
+    })
 
     describe('/', () => {
-        let res, collectionDb
-
-        beforeAll(async (done) => {
-            res = await supertest(app).get('/pokemon')
-            collectionDb = await Pokemon.find({})
-            done()
-        })
-
         describe('when database is empty', () => {
+            let checkDbIsEmpty, res
+            beforeAll( async (done) => {
+                checkDbIsEmpty = await Pokemon.find({})
+                expect(checkDbIsEmpty).toHaveLength(0)
+                res = await supertest(app).get('/pokemon')
+                done()
+            })
+
             test('response has success status 200', () => {
                 expect(res.status).toBe(200)
             })
@@ -113,15 +121,19 @@ describe('GET /pokemon', () => {
             test('response has body with empty collection of pokemon', () => {
                 expect(res.body).toMatchObject({
                     status: 'success',
-                    message: 'got ya pokemons fresh',
+                    message: 'Got ya pokemons fresh',
                     collection: []
                 })
             })
         })
 
         describe('when database has values', () => {
+            let res, allPokemons
             beforeAll(async done => {
-                await supertest(app).get('/pokemon')
+                await Pokemon.create(DEFAULT_POKEMON)
+                res = await supertest(app).get('/pokemon')
+                allPokemons = await Pokemon.find({})
+                expect(allPokemons).toHaveLength(1)
                 done()
             })
 
@@ -130,18 +142,12 @@ describe('GET /pokemon', () => {
             })
 
             test('response returns object of pokemons in database', () => {
-                expect(res.body.collection).toContain({
-                    name: 'Bulbasaur',
-                    hp: 100,
-                    weakness: 0,
-                    resistance: 0,
-                    abilities: [],
-                    elementType: '????'
-                })
+
+                expect(res.body.collection).toContain({ ...DEFAULT_POKEMON})
             })
 
             test('response returns same amount of pokemons that are in the database', () => {
-                expect(res.body.collection).toHaveLength(collectionDb.length)
+                expect(res.body.collection).toHaveLength(allPokemons.length)
             })
         })
 
@@ -149,22 +155,27 @@ describe('GET /pokemon', () => {
 
     describe('/:id', () => {
         describe('when database has pokemon with valid id', () => {
-            let res, idToGet
+            let res, idToGet, pokemonCreated
 
-            beforeAll(async () => {
-                idToGet = '5e564a86bd13800a180a456c'
-                givenPokemonInDb()
+            beforeAll(async (done) => {
+                await Pokemon.create(DEFAULT_POKEMON)
+                pokemonCreated = await Pokemon.find({})
+                // expect(pokemonCreated).toHaveLength(1)
+                idToGet = pokemonCreated.__id
+                console.log(idToGet)
                 res = await supertest(app).get(`/pokemon/${idToGet}`)
+                done()
             })
+
             test('response has success status 200', () => {
                 expect(res.status).toBe(200)
             })
 
             test('response returns object of pokemon within database', () => {
                 expect(res.body).toMatchObject({
-                    status: 'sucess',
+                    status: 'success',
                     message: 'Successfully wrangled a pokemon',
-                    pokemon: expectedPokemon
+                    pokemon: [DEFAULT_POKEMON]
                 })
             })
 
@@ -186,7 +197,7 @@ describe('GET /pokemon', () => {
             test('response returns message with not found', () => {
                 expect(res.body).toMatchObject({
                     status: 'failed',
-                    message: 'Could not find this pokemon :('
+                    message: `Could not find pokemon with an id of ${idToGet}`
                 })
             })
         })
@@ -211,8 +222,7 @@ describe('PATCH /pokemon', () => {
             test('return appropriate message and id of changed pokemon', () => {
                 expect(res.body).toMatchObject({
                     status: 'success',
-                    message: 'successfully evolved this pokemon',
-                    id: idToEvolve
+                    message: `Pokemon with id ${idToEvolve} has been evolved`
                 })
             })
         })
@@ -220,32 +230,24 @@ describe('PATCH /pokemon', () => {
         describe('given an invalid id', () => {
             let res, idToEvolve
             beforeAll(async () => {
-                idToEvolve = '5e57aaa64bb1af2fd2bcfc73'
+                idToEvolve = '5e57aaac73'
                 res = await supertest(app).patch(`/pokemon/${idToEvolve}/evolve`)
             })
 
-            test('return a success message of 202', () => {
-                expect(res.status).toBe(404)
+            test('return a failure message of 400', () => {
+                expect(res.status).toBe(400)
             })
 
-            test('return appropriate message and id of changed pokemon', () => {
+            test('return appropriate failure message', () => {
                 expect(res.body).toMatchObject({
-                    status: 'success',
-                    message: `Pokemon with id ${idToEvolve} has been evolved`,
-                    id: idToEvolve
+                    status: 'failed',
+                    message: `Could not evolve pokemon with an id of ${idToEvolve}`
                 })
             })
         })
     })
 })
 
-
-const givenPokemonInDb = async () => {
-    await supertest(app).post('/pokemon').send({
-        name: 'Bulbasaur',
-        hp: '100'
-    })
-}
 
 const givenDbIsEmpty = async () => {
     await Pokemon.deleteMany({})

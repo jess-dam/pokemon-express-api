@@ -9,7 +9,7 @@ beforeAll(async () => {
     await mongoose.connect(url, { useNewUrlParser: true })
 })
 
-describe('GET /trainer', () => {
+describe.only('GET /trainer', () => {
     describe('/', () => {
         let res
         describe('when there are no trainers', () => {

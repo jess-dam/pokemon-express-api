@@ -68,11 +68,17 @@ const getPokemonById = async (req, res, next) => {
         })
     }
 
+    // const allPokemon = await Pokemon.find({})
+    // if(allPokemon.length == 0){
+    //     res.status(404),
+    // }
+
     try{
         const foundPokemon = await Pokemon.findById(req.params.id)
+
         res.status(200).json({
             status: 'success',
-            message: 'Here ya pokemon',
+            message: 'Successfully wrangled a pokemon',
             pokemon: [foundPokemon]
         })
     } catch {
@@ -93,10 +99,8 @@ const evolve = async (req, res, next) => {
     }
 
     try{
-        console.log('going to evolve pokemon')
         const evolvedPokemon = await Pokemon.findById(req.params.id)
         evolvedPokemon.evolve()
-        console.log('evolved pokemon')
         res.status(202).json({
             status: 'success',
             message: `Pokemon with id ${req.params.id} has been evolved`

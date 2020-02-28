@@ -11,7 +11,6 @@ router.get('/:id/pokemon-deck', TrainerControl.getPokeDeckForTrainer)
 //POST
 router.post('/')
 
-
 //PATCH
 router.patch('/:id/pokemon')
 
