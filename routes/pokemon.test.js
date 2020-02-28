@@ -9,7 +9,8 @@ const DEFAULT_POKEMON = {
     resistance: 0,
     weakness: 0,
     abilities: [],
-    elementType: '????'
+    elementType: '????',
+    level: 0
 }
 
 
@@ -46,16 +47,7 @@ describe('POST /pokemon', () => {
             expect(res.body).toMatchObject({
                 status: 'success',
                 message: 'Pokemon created :)',
-                pokemon: [
-                    {
-                        name: "Bulbasaur",
-                        hp: 100,
-                        weakness: 0,
-                        resistance: 0,
-                        elementType: "????",
-                        __v: 0
-                    }
-                ]
+                pokemon: [DEFAULT_POKEMON]
             })
         })
 
@@ -143,7 +135,7 @@ describe('GET /pokemon', () => {
 
             test('response returns object of pokemons in database', () => {
 
-                expect(res.body.collection).toContain({ ...DEFAULT_POKEMON})
+                expect(res.body.collection[0]).toMatchObject({ ...DEFAULT_POKEMON})
             })
 
             test('response returns same amount of pokemons that are in the database', () => {
@@ -158,10 +150,12 @@ describe('GET /pokemon', () => {
             let res, idToGet, pokemonCreated
 
             beforeAll(async (done) => {
+                await Pokemon.deleteMany({})
                 await Pokemon.create(DEFAULT_POKEMON)
                 pokemonCreated = await Pokemon.find({})
-                // expect(pokemonCreated).toHaveLength(1)
-                idToGet = pokemonCreated.__id
+                expect(pokemonCreated).toHaveLength(1)
+                console.log(pokemonCreated[0])
+                idToGet = pokemonCreated[0]._id
                 console.log(idToGet)
                 res = await supertest(app).get(`/pokemon/${idToGet}`)
                 done()
@@ -223,6 +217,18 @@ describe('PATCH /pokemon', () => {
                 expect(res.body).toMatchObject({
                     status: 'success',
                     message: `Pokemon with id ${idToEvolve} has been evolved`
+                })
+            })
+
+            test('evolved pokemon should have appropriate increased stats', async () => {
+                const evolvedPokemon = await Pokemon.findOne({_id : idToEvolve})
+                console.log(DEFAULT_POKEMON.level)
+                expect(evolvedPokemon).toMatchObject({
+                    ...DEFAULT_POKEMON,
+                    hp : DEFAULT_POKEMON.hp + 10,
+                    resistance: DEFAULT_POKEMON.resistance + 2,
+                    weakness: DEFAULT_POKEMON.weakness - 1,
+                    level: DEFAULT_POKEMON.level + 1
                 })
             })
         })

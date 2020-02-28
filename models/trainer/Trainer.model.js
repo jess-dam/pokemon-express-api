@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
+const Schema = mongoose.Schema
 
-const TrainerSchema = new mongoose.Schema(
+const TrainerSchema = new Schema(
     {
         name: { type:String, default: '????' },
         level: { Number, default: 0 },
@@ -8,4 +9,6 @@ const TrainerSchema = new mongoose.Schema(
     }
 )
 
-module.exports = mongoose.model('Trainer', TrainerSchema)
+const model = mongoose.model('Trainer', TrainerSchema)
+
+module.exports = model

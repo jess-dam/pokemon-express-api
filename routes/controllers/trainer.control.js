@@ -1,7 +1,7 @@
-const Trainer = require('../../models/trainer/trainer.model')
+const TrainerModel = require('../../models/trainer/trainer.model')
 
 const getTrainers = async (req, res) => {
-    const allTrainers = await Trainer.find({})
+    const allTrainers = await TrainerModel.find({})
 
     if(allTrainers.length == 0) {
         res.status(204).json({

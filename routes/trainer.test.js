@@ -5,7 +5,7 @@ const mongoose = require('mongoose')
 
 
 beforeAll(async () => {
-    const url = 'mongodb://127.0.0.1/pokedex-test'
+    const url = 'mongodb://127.0.0.1/pokedex-test-trainer'
     await mongoose.connect(url, { useNewUrlParser: true })
 })
 
