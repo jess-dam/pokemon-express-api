@@ -3,13 +3,22 @@ const elementTypes = require('./pokemonElementTypes');
 
 const PokemonSchema = new mongoose.Schema(
     {
-        name: {type: String, default:'????' ,required: true},
+        name: {type: String, default:'????', required: true},
         hp: {type: Number, default: 0},
         weakness: {type: Number, default: 0},
         resistance: {type: Number, default: 0},
+        level: {type: Number, default: 0},
         abilities: {type: [String], default: []},
         elementType: { type: String, enum: elementTypes, default: '????' }
     }
 )
+
+PokemonSchema.methods.evolve = function() {
+    this.hp += 10
+    this.weakness -= 1
+    this.resistance += 2
+    this.level += 1
+    this.save()
+}
 
 module.exports = mongoose.model('Pokemon', PokemonSchema)

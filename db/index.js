@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 mongoose
-    .connect('mongodb://127.0.0.1:27017/pokemon-collection', {useNewUrlParser: true})
+    .connect('mongodb://127.0.0.1:27017/pokedex', {useNewUrlParser: true})
     .then(console.log('Now connected to mongodb database'))
     .catch(err => console.error('Could not connect to database ', err.message))
 

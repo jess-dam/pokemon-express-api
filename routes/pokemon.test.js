@@ -1,105 +1,265 @@
 const supertest = require('supertest');
 const app = require('../app');
-const db = require('../db/index')
+const Pokemon = require('../models/pokemons/Pokemon.model')
+const mongoose = require('mongoose')
+
+const DEFAULT_POKEMON = {
+    name: 'Bulbasaur',
+    hp: 100,
+    resistance: 0,
+    weakness: 0,
+    abilities: [],
+    elementType: '????',
+    level: 0
+}
 
 
+beforeAll(async (done) => {
+    const url = 'mongodb://127.0.0.1/pokedex-test'
+    await mongoose.connect(url, { useNewUrlParser: true })
+    // await givenDbIsEmpty()
+    // const databaseState = Pokemon.find({})
+    // expect(databaseState).toHaveLength(0)
+    done()
+})
 
-describe('GET Requests', () => {
-    let res;
 
-    beforeAll(async done => {
-        res = await supertest(app).get('/pokemon');
-        done();
+describe('POST /pokemon', () => {
+    describe('creating a pokemon with valid data', () => {
+        let res, createdId, pokemonBeforePost, pokemonAfterPost
+        beforeAll(async done => {
+            pokemonBeforePost = await Pokemon.find({})
+            res = await supertest(app).post('/pokemon').send({
+                name: 'Bulbasaur',
+                hp: '100'
+            })
+            pokemonAfterPost = await Pokemon.find({})
+            done()
+        })
+
+
+        test('response is 201', () => {
+            expect(res.status).toBe(201)
+        })
+
+        test('response body sends back created pokemon', () => {
+
+            expect(res.body).toMatchObject({
+                status: 'success',
+                message: 'Pokemon created :)',
+                pokemon: [DEFAULT_POKEMON]
+            })
+        })
+
+        test('the created pokemon has an id', () => {
+            expect(res.body.pokemon[0]).toHaveProperty('_id')
+        })
+
+        test('a pokemon with id exists in db', () => {
+            expect(pokemonAfterPost).toHaveLength(pokemonBeforePost.length + 1)
+        })
+
     })
 
-    it('can send back a response with a status code of 200', ()  => {
-        expect(res.status).toBe(200)
-    });
+    describe('creating a pokemon with invalid data', () => {
+        let res, createdId, pokemonBeforePost, pokemonAfterPost
+        beforeAll(async done => {
+            pokemonBeforePost = Pokemon.find({})
+            res = await supertest(app).post('/pokemon').send({
+                ultimateName: 'Vileplume',
+                favouriteMove: 'Chlorophyll'
+            })
+            pokemonAfterPost = Pokemon.find({})
+            done()
+        })
 
-    it('can send back a response with pokemon collection', () => {
-        expect(res.body).toMatchObject({
-            status: 'success'
+        test('reponse has status of 400', () => {
+            expect(res.status).toBe(400)
+        })
+
+        test('response has body with failure message', () => {
+            expect(res.body).toMatchObject({
+                status: 'failed',
+                message: 'Pokemon could not be added, invalid infomation for creation'
+            })
+        })
+
+        test('database should not add a new document', () => {
+            expect(pokemonBeforePost.collection).toHaveLength(pokemonAfterPost.collection.length)
+        })
+    })
+})
+
+describe('GET /pokemon', () => {
+    beforeAll( async (done) => {
+        await givenDbIsEmpty()
+        done()
+    })
+
+    describe('/', () => {
+        describe('when database is empty', () => {
+            let checkDbIsEmpty, res
+            beforeAll( async (done) => {
+                checkDbIsEmpty = await Pokemon.find({})
+                expect(checkDbIsEmpty).toHaveLength(0)
+                res = await supertest(app).get('/pokemon')
+                done()
+            })
+
+            test('response has success status 200', () => {
+                expect(res.status).toBe(200)
+            })
+
+            test('response has body with empty collection of pokemon', () => {
+                expect(res.body).toMatchObject({
+                    status: 'success',
+                    message: 'Got ya pokemons fresh',
+                    collection: []
+                })
+            })
+        })
+
+        describe('when database has values', () => {
+            let res, allPokemons
+            beforeAll(async done => {
+                await Pokemon.create(DEFAULT_POKEMON)
+                res = await supertest(app).get('/pokemon')
+                allPokemons = await Pokemon.find({})
+                expect(allPokemons).toHaveLength(1)
+                done()
+            })
+
+            test('response has success status 200', () => {
+                expect(res.status).toBe(200)
+            })
+
+            test('response returns object of pokemons in database', () => {
+
+                expect(res.body.collection[0]).toMatchObject({ ...DEFAULT_POKEMON})
+            })
+
+            test('response returns same amount of pokemons that are in the database', () => {
+                expect(res.body.collection).toHaveLength(allPokemons.length)
+            })
+        })
+
+    })
+
+    describe('/:id', () => {
+        describe('when database has pokemon with valid id', () => {
+            let res, idToGet, pokemonCreated
+
+            beforeAll(async (done) => {
+                await Pokemon.deleteMany({})
+                await Pokemon.create(DEFAULT_POKEMON)
+                pokemonCreated = await Pokemon.find({})
+                expect(pokemonCreated).toHaveLength(1)
+                console.log(pokemonCreated[0])
+                idToGet = pokemonCreated[0]._id
+                console.log(idToGet)
+                res = await supertest(app).get(`/pokemon/${idToGet}`)
+                done()
+            })
+
+            test('response has success status 200', () => {
+                expect(res.status).toBe(200)
+            })
+
+            test('response returns object of pokemon within database', () => {
+                expect(res.body).toMatchObject({
+                    status: 'success',
+                    message: 'Successfully wrangled a pokemon',
+                    pokemon: [DEFAULT_POKEMON]
+                })
+            })
+
+        })
+
+        describe('when database does not have pokemon with valid id', () => {
+            let res, idToGet
+
+            beforeAll(async done => {
+                idToGet = '242fde23'
+                res = await supertest(app).get(`/pokemon/${idToGet}`)
+                done()
+            })
+
+            test('response has failure status 404', () => {
+                expect(res.status).toBe(404)
+            })
+
+            test('response returns message with not found', () => {
+                expect(res.body).toMatchObject({
+                    status: 'failed',
+                    message: `Could not find pokemon with an id of ${idToGet}`
+                })
+            })
         })
     })
 })
 
 
-// describe('POST Requests', () => {
-//     let res;
-//     const pokemon = {
-//                 "name" : "mew two",
-//                 "hp" : "200",
-//                 "weakness" : "2",
-//                 "resitance" : "40"
-//             }
-//     beforeAll(async done => {
-//         res = await supertest(app).post('/collection/add-pokemon', pokemon);
-//         done();
-//     })
+describe('PATCH /pokemon', () => {
+    describe('/:id/evolve', () => {
+        describe('given a valid id', () => {
+            let res, idToEvolve
+            beforeAll(async () => {
+                const findId = await Pokemon.findOne({})
+                idToEvolve = findId._id
+                res = await supertest(app).patch(`/pokemon/${idToEvolve}/evolve`)
+            })
 
-//     it('can send a response with a status code of 201', ()  => {
-//         expect(res.status).toBe(201);
-//     });
+            test('return a success message of 202', () => {
+                expect(res.status).toBe(202)
+            })
 
-//     it('can send a response with a successful message', () => {
-//         expect(res.body).toMatchObject({
-//             status: 'success',
-//             message: 'You added a pokemon :)'
-//         })
-//     })
-// })
+            test('return appropriate message and id of changed pokemon', () => {
+                expect(res.body).toMatchObject({
+                    status: 'success',
+                    message: `Pokemon with id ${idToEvolve} has been evolved`
+                })
+            })
 
-// describe('PATCH Requests', () => {
-//     let res;
-//     const newName = 'Pikachu'
-//     const unavailableId = 1000
-//     const newPokemon = {
-//         id: 0,
-//         name: 'Flameon',
-//         hp: '1000',
-//         resistance: '400',
-//         weakness: '20'
-//     }
+            test('evolved pokemon should have appropriate increased stats', async () => {
+                const evolvedPokemon = await Pokemon.findOne({_id : idToEvolve})
+                console.log(DEFAULT_POKEMON.level)
+                expect(evolvedPokemon).toMatchObject({
+                    ...DEFAULT_POKEMON,
+                    hp : DEFAULT_POKEMON.hp + 10,
+                    resistance: DEFAULT_POKEMON.resistance + 2,
+                    weakness: DEFAULT_POKEMON.weakness - 1,
+                    level: DEFAULT_POKEMON.level + 1
+                })
+            })
+        })
 
-//     describe('can change the name of a pokemon', () => {
-//         beforeAll( async done => {
-//                 const idToRename = 0
-//                 myCollection = [];
-//                 myCollection.push(newPokemon)
-//                 expect(myCollection[0]).toMatchObject(newPokemon)
-//                 expect(myCollection).toHaveLength(1);
-//                 res = await supertest(app).patch(`/collection/pokemon/rename?id=${idToRename}&name=${newName}`);
-//                 done();
-//             })
+        describe('given an invalid id', () => {
+            let res, idToEvolve
+            beforeAll(async () => {
+                idToEvolve = '5e57aaac73'
+                res = await supertest(app).patch(`/pokemon/${idToEvolve}/evolve`)
+            })
 
-//         it('respond with a 202 success when there is a valid entry for id', () => {
-//             expect(res.status).toBe(202)
-//             expect(res.body).toMatchObject({
-//                 id: '0',
-//                 status: 'success',
-//                 message: 'Pokemon name updated'
-//             })
-//         })
+            test('return a failure message of 400', () => {
+                expect(res.status).toBe(400)
+            })
 
-//         it('makes sure the pokemon has been renamed', async() => {
-//             expect(myCollection[0]).toMatchObject({
-//                 id: 0,
-//                 name: 'Pikachu',
-//                 hp: '1000',
-//                 resistance: '400',
-//                 weakness: '20'
-//             })
-//         })
-//     })
+            test('return appropriate failure message', () => {
+                expect(res.body).toMatchObject({
+                    status: 'failed',
+                    message: `Could not evolve pokemon with an id of ${idToEvolve}`
+                })
+            })
+        })
+    })
+})
 
 
-//     it('can return reponse of 404 when pokemon does not exist', async () => {
-//         const invalidRes = await supertest(app).patch(`/collection/pokemon/rename?id=${unavailableId}&name=${newName}`)
-//         expect(invalidRes.status).toBe(404);
-//         expect(invalidRes.body).toMatchObject({
-//             "status": "failed",
-//             "message": "This pokemon could not be found"
-//         })
-//     })
+const givenDbIsEmpty = async () => {
+    await Pokemon.deleteMany({})
+}
 
-// })
+//  const givenPokemonCollectionIsEmpty = () => {
+
+//  }
+
