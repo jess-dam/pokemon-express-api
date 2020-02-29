@@ -145,7 +145,6 @@ describe('PATCH /trainer', () => {
     describe('/:id/pokemon', () => {
         let res
         beforeAll( async (done) => {
-            console.log(pokemon._id)
             res = await supertest(app).patch(`/trainer/${trainer._id}/pokemon-deck/${pokemon._id}`)
             done()
         })

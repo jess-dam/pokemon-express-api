@@ -17,9 +17,6 @@ const DEFAULT_POKEMON = {
 beforeAll(async (done) => {
     const url = 'mongodb://127.0.0.1/pokedex-test'
     await mongoose.connect(url, { useNewUrlParser: true })
-    // await givenDbIsEmpty()
-    // const databaseState = Pokemon.find({})
-    // expect(databaseState).toHaveLength(0)
     done()
 })
 
@@ -221,7 +218,6 @@ describe('PATCH /pokemon', () => {
             test('evolved pokemon should have appropriate increased stats', async () => {
                 const evolvedPokemon = await Pokemon.findById(idToEvolve)
                 expect(evolvedPokemon).toMatchObject({
-                    ...DEFAULT_POKEMON,
                     hp : DEFAULT_POKEMON.hp + 10,
                     resistance: DEFAULT_POKEMON.resistance + 2,
                     weakness: DEFAULT_POKEMON.weakness - 1,

@@ -10,6 +10,7 @@ describe('Password storage', () => {
   let user
   beforeAll(async (done) => {
     user = await User.create({ username: 'bob948', password: 'je0few8' });
+    console.log(user)
     done()
   })
   it('does not store the plain text password', () => {
@@ -20,4 +21,6 @@ describe('Password storage', () => {
     const isMatch = await bcrypt.compare('je0few8', user.password)
     expect(isMatch).toBeTruthy()
   })
+
 })
+
