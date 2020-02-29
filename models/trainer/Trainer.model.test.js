@@ -15,6 +15,7 @@ describe.only('TrainerModel', () => {
       done()
     })
     test('creates a database entry', async (done) => {
+      console.log(TrainerModel)
       await TrainerModel.create({
         name: 'Ash',
         description: 'This is your first trainer'
