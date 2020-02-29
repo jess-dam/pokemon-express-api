@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const TrainerModel = require('./Trainer.model')
 
-describe.only('TrainerModel', () => {
+describe('TrainerModel', () => {
   beforeAll(async (done) => {
     const url = `mongodb://127.0.0.1/pokedex-test-models`
     await mongoose.connect(url, { useNewUrlParser: true })
