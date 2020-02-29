@@ -1,3 +1,4 @@
+const dotenv = require('dotenv')
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -10,6 +11,8 @@ var pokemonRouter = require('./routes/pokemon');
 var trainerRouter = require('./routes/trainer');
 
 var app = express();
+
+dotenv.config()
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
