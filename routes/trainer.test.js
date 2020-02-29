@@ -21,6 +21,7 @@ describe('GET /trainer', () => {
 
         beforeAll(async (done) => {
             await givenCollectionIsEmpty()
+            res = await supertest(app).get('/trainer')
             done()
         })
 
@@ -32,26 +33,30 @@ describe('GET /trainer', () => {
             expect(res.body).toMatchObject({
                 status: 'success',
                 message: 'Successfully fetched trainers',
-                trainers: [DEFAULT_TRAINER]
+                trainers: []
             })
         })
     })
 
     describe('/:id', () => {
-        let validIdToGet
-        beforeAll(async (done) => {
-            await givenATrainerInCollection()
-            const aValidTrainer = await TrainerModel.findOne({})
-            validIdToGet = aValidTrainer.__id
-            done()
-        })
         describe('when id is valid', () => {
+            let validIdToGet, res
+            beforeAll(async (done) => {
+                const aValidTrainer = await givenATrainerInCollection()
+                validIdToGet = aValidTrainer._id
+                res = await supertest(app).get(`/trainer/${validIdToGet}`)
+                done()
+            })
             test('returns success message of 200', () => {
-
+                expect(res.status).toBe(200)
             })
 
             test('returns success message with trainer object', () => {
-
+                expect(res.body).toMatchObject({
+                    status: 'success',
+                    message: 'Successfully got trainer',
+                    trainer: DEFAULT_TRAINER
+                })
             })
         })
 
@@ -66,6 +71,7 @@ describe('GET /trainer', () => {
         })
     })
 
+    //EXTRA FEATURE -- to be added
     describe('/:id/pokemon-deck', () => {
         describe('when id is valid', () => {
             test('return success status 200', () => {
@@ -124,11 +130,12 @@ describe('POST /trainer', () => {
     // })
 })
 
-describe.only('PATCH /trainer', () => {
+describe('PATCH /trainer', () => {
+    let trainer, pokemon
     beforeAll( async done => {
-        givenCollectionIsEmpty()
-        await Trainer.create(DEFAULT_TRAINER)
-        await Pokemon.create({
+        await givenCollectionIsEmpty()
+        trainer = await givenATrainerInCollection()
+        pokemon = await PokemonModel.create({
             name: 'Flameon',
             hp: 200
         })
@@ -138,9 +145,8 @@ describe.only('PATCH /trainer', () => {
     describe('/:id/pokemon', () => {
         let res
         beforeAll( async (done) => {
-            const pokemonToCatch = await PokemonModel.findOne({})
-            const pokemonId = pokemonToCatch._id
-            res = await supertest(app).patch('/')
+            console.log(pokemon._id)
+            res = await supertest(app).patch(`/trainer/${trainer._id}/pokemon-deck/${pokemon._id}`)
             done()
         })
         test('should return success status 202', () => {
@@ -148,18 +154,18 @@ describe.only('PATCH /trainer', () => {
         })
 
         test('should return success message and id', () => {
-            expect(res.body).toBe({
+            expect(res.body).toMatchObject({
                 status: 'success',
-                message: `Successfully caught the pokemon! (${pokemonId})`
+                message: `Pokemon ${pokemon.name} has been caught by trainer ${trainer.name}`
             })
         })
     })
 })
 
 const givenATrainerInCollection = async () => {
-    const createdTrainer = await TrainerModel.create(DEFAULT_TRAINER)
+    return await TrainerModel.create(DEFAULT_TRAINER)
 }
 
 const givenCollectionIsEmpty = async () => {
-    const deleteTrainers = await TrainerModel.deleteMany({})
+    await TrainerModel.deleteMany({})
 }

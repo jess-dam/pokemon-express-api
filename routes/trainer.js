@@ -4,7 +4,7 @@ var router = express.Router()
 
 
 // GET
-router.get('/', TrainerControl.getTrainerCollection)
+router.get('/',TrainerControl.getTrainerCollection)
 router.get('/:id', TrainerControl.getTrainersById)
 router.get('/:id/pokemon-deck', TrainerControl.getPokeDeckForTrainer)
 
@@ -12,7 +12,7 @@ router.get('/:id/pokemon-deck', TrainerControl.getPokeDeckForTrainer)
 router.post('/', TrainerControl.createTrainer)
 
 //PATCH
-router.patch('/:id/pokemon')
+router.patch('/:id/pokemon-deck/:pokemonId', TrainerControl.addPokemonToTrainerPokeDeck)
 
 module.exports = router
 

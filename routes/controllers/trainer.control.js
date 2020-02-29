@@ -1,19 +1,33 @@
-const express = require('express');
 const Trainer = require('../../models/trainer/Trainer.model')
-const db = require('../../db/index')
-
+const Pokemon = require('../../models/pokemon/Pokemon.model')
 
 const getTrainerCollection = async (req, res, next) => {
     const collectionResults = await Trainer.find({})
 
     res.status(200).json({
         status: 'success',
-        message: 'Here are the trainers',
-        collection: collectionResults
+        message: 'Successfully fetched trainers',
+        trainers: collectionResults
     })
 }
 
-const getTrainersById = (req, res) => {}
+const getTrainersById = async (req, res) => {
+    let trainerFound
+    try {
+        trainerFound = await Trainer.findById(req.params.id)
+    } catch {
+        res.status(404).json({
+            status: 'failed',
+            message: `Trainer ${req.params.id} could not be found`
+        })
+    }
+
+    res.status(200).json({
+        status: 'success',
+        message: 'Successfully got trainer',
+        trainer: trainerFound
+    })
+}
 
 const getPokeDeckForTrainer = (req, res) => {}
 
@@ -42,7 +56,6 @@ const createTrainer = async (req, res, next) => {
 
 
     } catch { err => {
-
         console.log(err)
         res.status(400).json({
             status: 'failed',
@@ -54,27 +67,21 @@ const createTrainer = async (req, res, next) => {
 
 const addPokemonToTrainerPokeDeck = async (req, res) => {
     let trainer
-    if(!req.body) {
-        res.status(400).send({
-            status: 'failed',
-            message: 'you have not specified a pokemon to add'
-        })
-    }
     try {
         try {
-            trainer = await Trainer.findOne({_id: req.params.id})
+            trainer = await Trainer.findById(req.params.id)
         } catch {
             res.status(404).json({
                 status: 'failed',
-                message: `Could not find the trainer with id ${req.params._id}`
+                message: `Could not find the trainer with id ${req.params.id}`
             })
         }
-        const pokemonToCatch = await Pokemon.findOne({_id: req.query.pokemonId})
+        const pokemonToCatch = await Pokemon.findById(req.params.pokemonId)
         const pokemonId = pokemonToCatch._id
 
         trainer.catchPokemon(pokemonId)
 
-        res.status(201).json({
+        res.status(202).json({
             status: 'success',
             message: `Pokemon ${pokemonToCatch.name} has been caught by trainer ${trainer.name}`
         })
@@ -82,7 +89,7 @@ const addPokemonToTrainerPokeDeck = async (req, res) => {
     } catch {
         res.status({
             status: 'failed',
-            message: `The pokemon got away, or never existed (${req.query.pokemonId})`
+            message: `The pokemon got away, or never existed (${req.params.pokemonId})`
         })
     }
 

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
-const User = require('./User.model')
+const User = require('../models/user/User.model')
+
 beforeAll(async () => {
   const url = `mongodb://127.0.0.1/user-model-test`
   await mongoose.connect(url, { useNewUrlParser: true })
