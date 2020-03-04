@@ -15,7 +15,6 @@ UserSchema.pre('save', async function() {
 })
 
 UserSchema.methods.generateAuthToken = function () {
-    console.log(process.env.JWT_SECRET)
     return jwt.sign(this.id, process.env.JWT_SECRET)
 }
 

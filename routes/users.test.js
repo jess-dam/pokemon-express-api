@@ -13,7 +13,6 @@ beforeAll(async () => {
 describe('POST /signup', () => {
   let res
   beforeAll(async (done) => {
-    console.log('test test')
     res = await supertest(app).post('/users/signup').send({
       username: 'ffdfd',
       email: 'hello@domain.com',
@@ -26,9 +25,11 @@ describe('POST /signup', () => {
   })
   it('sends back an authorisation token', () => {
     expect(typeof res.body.token).toBe('string')
+    console.log(res.body.token)
   })
 })
-describe('protected route', () => {
+
+describe('GET /protected route', () => {
   describe('no token provided', () => {
     it('sends back a 401 response', async (done) => {
       const res = await supertest(app).get('/users/protected')
@@ -38,9 +39,11 @@ describe('protected route', () => {
   })
   describe('valid token provided', () => {
     it('send back a 200 response', async (done) => {
-      const user = await User.create({ user: 'sfsfsgsf', email: 'whatever@hello.com', password: 'fewfew999' })
+      const user = await User.create({ username: 'sfsfsgsf', email: 'whatever@hello.com', password: 'fewfew999' })
       const token = user.generateAuthToken()
-      const res = await supertest(app).get('/protected')
+      console.log(token)
+
+      const res = await supertest(app).get('/users/protected')
         .set('Authorization', `Bearer ${token}`)
       expect(res.status).toBe(200)
       done()

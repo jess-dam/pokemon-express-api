@@ -234,13 +234,13 @@ describe('PATCH /pokemon', () => {
             })
 
             test('return a failure message of 400', () => {
-                expect(res.status).toBe(400)
+                expect(res.status).toBe(404)
             })
 
             test('return appropriate failure message', () => {
                 expect(res.body).toMatchObject({
                     status: 'failed',
-                    message: `Could not evolve pokemon with an id of ${idToEvolve}`
+                    message: `Could not find a pokemon with id ${idToEvolve} to evolve, are you sure it exists?`
                 })
             })
         })

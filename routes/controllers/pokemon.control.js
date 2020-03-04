@@ -90,7 +90,7 @@ const getPokemonById = async (req, res, next) => {
 }
 
 const evolve = async (req, res, next) => {
-    // console.log(req.)
+    let pokemonToEvolve
     if(!req.params.id){
         res.status(400).json({
             status: 'failed',
@@ -99,8 +99,16 @@ const evolve = async (req, res, next) => {
     }
 
     try{
-        const evolvedPokemon = await Pokemon.findById(req.params.id)
-        evolvedPokemon.evolve()
+        pokemonToEvolve = await Pokemon.findById(req.params.id)
+    } catch {
+        res.status(404).json({
+            status: 'failed',
+            message: `Could not find a pokemon with id ${req.params.id} to evolve, are you sure it exists?`
+        })
+    }
+
+    try{
+        pokemonToEvolve.evolve()
         res.status(202).json({
             status: 'success',
             message: `Pokemon with id ${req.params.id} has been evolved`
